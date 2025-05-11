@@ -5,211 +5,214 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor de Nota Fiscal</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f4f8;
-            color: #333;
-        }
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            border-top: 5px solid #4285f4;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #4285f4;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-            background-color: #f8fbff;
-            padding: 15px;
-            border-radius: 6px;
-        }
-        .logo {
-            max-width: 150px;
-        }
-        .info-block {
-            margin-bottom: 20px;
-            background-color: #fcfcfc;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 3px solid #4285f4;
-        }
-        .info-row {
-            display: flex;
-            margin-bottom: 12px;
-        }
-        .info-label {
-            font-weight: 600;
-            width: 150px;
-            flex-shrink: 0;
-            color: #4285f4;
-        }
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 20px 0;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
-        th, td {
-            border: none;
-            border-bottom: 1px solid #e6e9ed;
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #4285f4;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        tr:hover {
-            background-color: #f1f6ff;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            transition: border-color 0.2s;
-        }
-        input:focus, select:focus {
-            border-color: #4285f4;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
-        }
-        .total-row {
-            font-weight: bold;
-            background-color: #f1f6ff;
-        }
-        .button-row {
-            margin-top: 30px;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        button {
-            background-color: #4285f4;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 5px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(66, 133, 244, 0.3);
-        }
-        button:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4);
-        }
-        #shareModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            width: 70%;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-        .close {
-            float: right;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #sharableLink {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .divider {
-            border-top: 1px dashed #ccc;
-            margin: 25px 0;
-            position: relative;
-        }
-        .divider:before {
-            content: "•";
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            background: white;
-            padding: 0 10px;
-            color: #4285f4;
-        }
-        .editable {
-            background-color: #f9fafe;
-            border-radius: 4px;
-            padding: 4px 8px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .editable:hover {
-            border-color: #b8d1ff;
-            background-color: #f0f7ff;
-        }
-        .editable:focus {
-            outline: none;
-            border-color: #4285f4;
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
-        }
-        .product-row td:last-child,
-        .product-row td:nth-last-child(2),
-        .product-row td:nth-last-child(3) {
-            text-align: right;
-        }
-        .numero-pedido-container {
-            display: flex;
-            align-items: center;
-            background: #4285f4;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-weight: bold;
-        }
-        .numero-pedido-label {
-            margin-right: 10px;
-        }
-        #numero-pedido {
-            background: white;
-            color: #4285f4;
-            padding: 2px 8px;
-            border-radius: 15px;
-            min-width: 40px;
-            text-align: center;
-        }
-    </style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    max-height: 50px;
+    margin-bottom: 10px;
+}
+
+.numero-pedido-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.numero-pedido-container input {
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 150px;
+}
+
+.numero-pedido-container button {
+    padding: 6px 12px;
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.numero-pedido-container button:hover {
+    background-color: #0d6efd;
+}
+
+.produto {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.produto img {
+    max-width: 80px;
+    margin-right: 10px;
+}
+
+.produto-info {
+    flex: 1;
+}
+
+.produto-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.produto-info p {
+    margin: 0;
+    color: #555;
+    font-size: 14px;
+}
+
+input, select {
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.tabela-pedidos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.tabela-pedidos th, .tabela-pedidos td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.tabela-pedidos th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.button-row button {
+    flex: 1;
+    min-width: 120px;
+}
+
+.total {
+    text-align: right;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.info-label {
+    width: 200px;
+}
+
+/* === RESPONSIVIDADE PARA CELULAR === */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .logo {
+        margin-top: 15px;
+        max-width: 100px;
+    }
+
+    .numero-pedido-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .numero-pedido-container input {
+        width: 100%;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .info-label {
+        width: 100%;
+    }
+
+    .button-row {
+        flex-direction: column;
+    }
+
+    .button-row button {
+        width: 100%;
+    }
+}
+</style>
 </head>
 <body>
     <div class="container">
