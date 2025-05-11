@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Nota Fiscal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            border-top: 5px solid #4285f4;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            background-color: #f8fbff;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .logo {
+            max-width: 150px;
+        }
+        .info-block {
+            margin-bottom: 20px;
+            background-color: #fcfcfc;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #4285f4;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 150px;
+            flex-shrink: 0;
+            color: #4285f4;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        th, td {
+            border: none;
+            border-bottom: 1px solid #e6e9ed;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #4285f4;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #f1f6ff;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: #4285f4;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f1f6ff;
+        }
+        .button-row {
+            margin-top: 30px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(66, 133, 244, 0.3);
+        }
+        button:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4);
+        }
+        #shareModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 70%;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        .close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #sharableLink {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .divider {
+            border-top: 1px dashed #ccc;
+            margin: 25px 0;
+            position: relative;
+        }
+        .divider:before {
+            content: "•";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            background: white;
+            padding: 0 10px;
+            color: #4285f4;
+        }
+        .editable {
+            background-color: #f9fafe;
+            border-radius: 4px;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .editable:hover {
+            border-color: #b8d1ff;
+            background-color: #f0f7ff;
+        }
+        .editable:focus {
+            outline: none;
+            border-color: #4285f4;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        .product-row td:last-child,
+        .product-row td:nth-last-child(2),
+        .product-row td:nth-last-child(3) {
+            text-align: right;
+        }
+        .numero-pedido-container {
+            display: flex;
+            align-items: center;
+            background: #4285f4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+        .numero-pedido-label {
+            margin-right: 10px;
+        }
+        #numero-pedido {
+            background: white;
+            color: #4285f4;
+            padding: 2px 8px;
+            border-radius: 15px;
+            min-width: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h2 id="empresa-nome" contenteditable="true" class="editable">Tomazela Piscinas</h2>
+                <p id="empresa-cnpj" contenteditable="true" class="editable">CNPJ: 40136528000107 IE: 271034122111</p>
+                <p id="empresa-endereco" contenteditable="true" class="editable">Rua Romualdo Albino Balestrin, nro.35, Cohab III</p>
+                <p id="empresa-cidade" contenteditable="true" class="editable">Conchas-SP</p>
+                <p id="empresa-contato" contenteditable="true" class="editable">Fones: 14 3845-2887/14981722063</p>
+                <p id="empresa-email" contenteditable="true" class="editable">E-mail: ftj230291@gmail.com</p>
+            </div>
+            <div>
+                <img src="/logo.png" alt="Logo" class="logo">
+            </div>
+        </div>
+
+        <div class="info-block">
+            <div class="info-row">
+                <span class="info-label">Data de Emissão:</span>
+                <span id="data-emissao">Carregando...</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <div class="numero-pedido-container">
+                        <span class="numero-pedido-label">PEDIDO Nº:</span>
+                        <span id="numero-pedido" contenteditable="true" class="editable">390</span>
+                    </div>
+                </span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-block">
+            <h3>Dados do Cliente</h3>
+            <div class="info-row">
+                <span class="info-label">Razão Social:</span>
+                <span id="cliente-razao" contenteditable="true" class="editable">59 Valdir</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">CEP:</span>
+                    <span id="cliente-cep" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Nome Fantasia:</span>
+                <span id="cliente-fantasia" contenteditable="true" class="editable"></span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">CNPJ/CPF:</span>
+                    <span id="cliente-cnpj-cpf" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fones/E-mail:</span>
+                <span id="cliente-contato" contenteditable="true" class="editable">//</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">RG/IE:</span>
+                    <span id="cliente-rg-ie" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Logradouro:</span>
+                <span id="cliente-logradouro" contenteditable="true" class="editable">, nº</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Emissão:</span>
+                    <span id="cliente-emissao" contenteditable="true" class="editable">02/04/2025 11:32</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Complemento:</span>
+                <span id="cliente-complemento" contenteditable="true" class="editable"></span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Forma de Cobrança:</span>
+                    <span id="forma-cobranca" contenteditable="true" class="editable">Dinheiro</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Bairro:</span>
+                <span id="cliente-bairro" contenteditable="true" class="editable"></span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Cond. Pagto:</span>
+                    <span id="cond-pagto" contenteditable="true" class="editable">À Vista</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Localidade:</span>
+                <span id="cliente-localidade" contenteditable="true" class="editable">-</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Tipo Frete:</span>
+                    <span id="tipo-frete" contenteditable="true" class="editable">CIF</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Vendedor:</span>
+                <span id="vendedor" contenteditable="true" class="editable">Fernando</span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Ord. Compra:</span>
+                    <span id="ord-compra" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Transportador:</span>
+                <span id="transportador" contenteditable="true" class="editable"></span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Entrega:</span>
+                    <span id="entrega" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Observações:</span>
+                <span id="observacoes" contenteditable="true" class="editable"></span>
+                <span style="flex-grow: 1; text-align: right;">
+                    <span class="info-label">Tabela:</span>
+                    <span id="tabela" contenteditable="true" class="editable"></span>
+                </span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <table id="produtos-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Unid.</th>
+                    <th>Qtde.</th>
+                    <th>Vlr. Unit.</th>
+                    <th>Desconto</th>
+                    <th>Vlr. Total</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="produtos-tbody">
+                <tr class="product-row" data-id="1">
+                    <td contenteditable="true" class="editable">27</td>
+                    <td contenteditable="true" class="editable">Cloro</td>
+                    <td contenteditable="true" class="editable">1kg</td>
+                    <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">1</td>
+                    <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">199,00</td>
+                    <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">0,00</td>
+                    <td contenteditable="true" class="editable">199,00</td>
+                    <td>
+                        <button type="button" onclick="excluirProduto(this)" style="padding: 5px; background-color: #f44336;">X</button>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6" style="text-align: right;"><strong>Total:</strong></td>
+                    <td id="total-valor" style="text-align: right;"><strong>199,00</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="button-row">
+            <button type="button" onclick="adicionarProduto()">Adicionar Produto</button>
+            <button type="button" onclick="compartilhar()">Compartilhar</button>
+            <button type="button" onclick="imprimirNotaFiscal()">Imprimir</button>
+        </div>
+    </div>
+
+    <div id="shareModal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h3>Compartilhar Nota Fiscal</h3>
+            <p>Use o link abaixo para compartilhar esta nota fiscal:</p>
+            <input type="text" id="sharableLink" readonly>
+            <div class="button-row">
+                <button type="button" onclick="copiarLink()">Copiar Link</button>
+                <button type="button" onclick="compartilharWhatsApp()">Compartilhar no WhatsApp</button>
+                <button type="button" onclick="compartilharEmail()">Compartilhar por E-mail</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para formatar valores monetários
+        function formatarMoeda(valor) {
+            return parseFloat(valor).toFixed(2).replace('.', ',');
+        }
+
+        // Função para adicionar um novo produto
+        function adicionarProduto() {
+            const tbody = document.getElementById('produtos-tbody');
+            const rowId = tbody.children.length + 1;
+            
+            const novaLinha = document.createElement('tr');
+            novaLinha.className = 'product-row';
+            novaLinha.dataset.id = rowId;
+            
+            novaLinha.innerHTML = `
+                <td contenteditable="true" class="editable"></td>
+                <td contenteditable="true" class="editable"></td>
+                <td contenteditable="true" class="editable"></td>
+                <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">1</td>
+                <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">0,00</td>
+                <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">0,00</td>
+                <td contenteditable="true" class="editable">0,00</td>
+                <td>
+                    <button type="button" onclick="excluirProduto(this)" style="padding: 5px; background-color: #f44336;">X</button>
+                </td>
+            `;
+            
+            tbody.appendChild(novaLinha);
+            atualizarTotalGeral();
+        }
+
+        // Função para excluir um produto
+        function excluirProduto(botao) {
+            const linha = botao.closest('tr');
+            if (confirm('Deseja realmente excluir este produto?')) {
+                linha.remove();
+                atualizarTotalGeral();
+            }
+        }
+
+        // Função para recalcular o total de um produto
+        function recalcularTotal(elemento) {
+            const linha = elemento.closest('tr');
+            const quantidade = parseFloat(linha.cells[3].textContent.replace(',', '.')) || 0;
+            const valorUnitario = parseFloat(linha.cells[4].textContent.replace(',', '.')) || 0;
+            const desconto = parseFloat(linha.cells[5].textContent.replace(',', '.')) || 0;
+            
+            const valorTotal = (quantidade * valorUnitario) - desconto;
+            linha.cells[6].textContent = formatarMoeda(valorTotal);
+            
+            atualizarTotalGeral();
+        }
+
+        // Função para atualizar o total geral
+        function atualizarTotalGeral() {
+            const linhas = document.querySelectorAll('.product-row');
+            let totalGeral = 0;
+            
+            linhas.forEach(linha => {
+                const valorTotal = parseFloat(linha.cells[6].textContent.replace(',', '.')) || 0;
+                totalGeral += valorTotal;
+            });
+            
+            document.getElementById('total-valor').textContent = formatarMoeda(totalGeral);
+        }
+
+        // Função para compartilhar
+        function compartilhar() {
+            // Cria um objeto com todos os dados da nota fiscal
+            const dadosNotaFiscal = coletarDadosNotaFiscal();
+            
+            // Converte para string JSON e codifica para URL
+            const dadosJSON = JSON.stringify(dadosNotaFiscal);
+            const dadosEncoded = encodeURIComponent(dadosJSON);
+            
+            // Gera um link compartilhável (neste exemplo usamos um placeholder)
+            const link = `${window.location.origin}${window.location.pathname}?data=${dadosEncoded}`;
+            
+            // Mostra o modal com o link
+            document.getElementById('sharableLink').value = link;
+            document.getElementById('shareModal').style.display = 'block';
+        }
+
+        // Função para coletar todos os dados da nota fiscal
+        function coletarDadosNotaFiscal() {
+            // Dados da empresa
+            const dadosEmpresa = {
+                nome: document.getElementById('empresa-nome').textContent,
+                cnpj: document.getElementById('empresa-cnpj').textContent,
+                endereco: document.getElementById('empresa-endereco').textContent,
+                cidade: document.getElementById('empresa-cidade').textContent,
+                contato: document.getElementById('empresa-contato').textContent,
+                email: document.getElementById('empresa-email').textContent
+            };
+
+            // Dados do pedido
+            const dadosPedido = {
+                dataEmissao: document.getElementById('data-emissao').textContent,
+                numeroPedido: document.getElementById('numero-pedido').textContent
+            };
+
+            // Dados do cliente
+            const dadosCliente = {
+                razaoSocial: document.getElementById('cliente-razao').textContent,
+                nomeFantasia: document.getElementById('cliente-fantasia').textContent,
+                contato: document.getElementById('cliente-contato').textContent,
+                logradouro: document.getElementById('cliente-logradouro').textContent,
+                complemento: document.getElementById('cliente-complemento').textContent,
+                bairro: document.getElementById('cliente-bairro').textContent,
+                localidade: document.getElementById('cliente-localidade').textContent,
+                cep: document.getElementById('cliente-cep').textContent,
+                cnpjCpf: document.getElementById('cliente-cnpj-cpf').textContent,
+                rgIe: document.getElementById('cliente-rg-ie').textContent,
+                emissao: document.getElementById('cliente-emissao').textContent
+            };
+
+            // Dados de pagamento
+            const dadosPagamento = {
+                formaCobranca: document.getElementById('forma-cobranca').textContent,
+                condPagto: document.getElementById('cond-pagto').textContent,
+                tipoFrete: document.getElementById('tipo-frete').textContent,
+                ordCompra: document.getElementById('ord-compra').textContent,
+                vendedor: document.getElementById('vendedor').textContent,
+                transportador: document.getElementById('transportador').textContent,
+                entrega: document.getElementById('entrega').textContent,
+                observacoes: document.getElementById('observacoes').textContent,
+                tabela: document.getElementById('tabela').textContent
+            };
+
+            // Produtos
+            const produtos = [];
+            const linhasProdutos = document.querySelectorAll('.product-row');
+            
+            linhasProdutos.forEach(linha => {
+                const produto = {
+                    codigo: linha.cells[0].textContent,
+                    descricao: linha.cells[1].textContent,
+                    unidade: linha.cells[2].textContent,
+                    quantidade: linha.cells[3].textContent,
+                    valorUnitario: linha.cells[4].textContent,
+                    desconto: linha.cells[5].textContent,
+                    valorTotal: linha.cells[6].textContent
+                };
+                produtos.push(produto);
+            });
+
+            // Valor total
+            const valorTotal = document.getElementById('total-valor').textContent;
+
+            // Retorna o objeto completo
+            return {
+                empresa: dadosEmpresa,
+                pedido: dadosPedido,
+                cliente: dadosCliente,
+                pagamento: dadosPagamento,
+                produtos: produtos,
+                total: valorTotal
+            };
+        }
+
+        // Função para fechar o modal
+        function fecharModal() {
+            document.getElementById('shareModal').style.display = 'none';
+        }
+
+        // Função para copiar o link para a área de transferência
+        function copiarLink() {
+            const linkInput = document.getElementById('sharableLink');
+            linkInput.select();
+            document.execCommand('copy');
+            alert('Link copiado para a área de transferência!');
+        }
+
+        // Função para compartilhar no WhatsApp
+        function compartilharWhatsApp() {
+            const link = document.getElementById('sharableLink').value;
+            const clienteNome = document.getElementById('cliente-razao').textContent;
+            const numeroPedido = document.getElementById('numero-pedido').textContent;
+            
+            const textoWhatsApp = `Nota Fiscal ${numeroPedido} para ${clienteNome}. Acesse: ${link}`;
+            const whatsappLink = `https://wa.me/?text=${encodeURIComponent(textoWhatsApp)}`;
+            
+            window.open(whatsappLink, '_blank');
+        }
+
+        // Função para compartilhar por e-mail
+        function compartilharEmail() {
+            const link = document.getElementById('sharableLink').value;
+            const clienteNome = document.getElementById('cliente-razao').textContent;
+            const numeroPedido = document.getElementById('numero-pedido').textContent;
+            
+            const assunto = `Nota Fiscal ${numeroPedido} - ${clienteNome}`;
+            const corpo = `Prezado cliente,\n\nSegue o link para acessar sua Nota Fiscal ${numeroPedido}:\n${link}\n\nAtenciosamente,\n${document.getElementById('empresa-nome').textContent}`;
+            
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+            
+            window.location.href = mailtoLink;
+        }
+
+        // Função para imprimir a nota fiscal
+        function imprimirNotaFiscal() {
+            window.print();
+        }
+
+        // Função para carregar dados da URL se existirem
+        function carregarDadosDaURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dadosEncoded = urlParams.get('data');
+            
+            if (dadosEncoded) {
+                try {
+                    const dadosJSON = decodeURIComponent(dadosEncoded);
+                    const dados = JSON.parse(dadosJSON);
+                    
+                    // Implementar a lógica para preencher o formulário com os dados recebidos
+                    preencherFormulario(dados);
+                } catch (e) {
+                    console.error("Erro ao carregar dados da URL:", e);
+                }
+            }
+        }
+
+        // Função para preencher o formulário com os dados recebidos
+        function preencherFormulario(dados) {
+            // Preencher dados da empresa
+            if (dados.empresa) {
+                document.getElementById('empresa-nome').textContent = dados.empresa.nome || '';
+                document.getElementById('empresa-cnpj').textContent = dados.empresa.cnpj || '';
+                document.getElementById('empresa-endereco').textContent = dados.empresa.endereco || '';
+                document.getElementById('empresa-cidade').textContent = dados.empresa.cidade || '';
+                document.getElementById('empresa-contato').textContent = dados.empresa.contato || '';
+                document.getElementById('empresa-email').textContent = dados.empresa.email || '';
+            }
+
+            // Preencher dados do pedido
+            if (dados.pedido) {
+                document.getElementById('data-emissao').textContent = dados.pedido.dataEmissao || '';
+                document.getElementById('numero-pedido').textContent = dados.pedido.numeroPedido || '';
+            }
+
+            // Preencher dados do cliente
+            if (dados.cliente) {
+                document.getElementById('cliente-razao').textContent = dados.cliente.razaoSocial || '';
+                document.getElementById('cliente-fantasia').textContent = dados.cliente.nomeFantasia || '';
+                document.getElementById('cliente-contato').textContent = dados.cliente.contato || '';
+                document.getElementById('cliente-logradouro').textContent = dados.cliente.logradouro || '';
+                document.getElementById('cliente-complemento').textContent = dados.cliente.complemento || '';
+                document.getElementById('cliente-bairro').textContent = dados.cliente.bairro || '';
+                document.getElementById('cliente-localidade').textContent = dados.cliente.localidade || '';
+                document.getElementById('cliente-cep').textContent = dados.cliente.cep || '';
+                document.getElementById('cliente-cnpj-cpf').textContent = dados.cliente.cnpjCpf || '';
+                document.getElementById('cliente-rg-ie').textContent = dados.cliente.rgIe || '';
+                document.getElementById('cliente-emissao').textContent = dados.cliente.emissao || '';
+            }
+
+            // Preencher dados de pagamento
+            if (dados.pagamento) {
+                document.getElementById('forma-cobranca').textContent = dados.pagamento.formaCobranca || '';
+                document.getElementById('cond-pagto').textContent = dados.pagamento.condPagto || '';
+                document.getElementById('tipo-frete').textContent = dados.pagamento.tipoFrete || '';
+                document.getElementById('ord-compra').textContent = dados.pagamento.ordCompra || '';
+                document.getElementById('vendedor').textContent = dados.pagamento.vendedor || '';
+                document.getElementById('transportador').textContent = dados.pagamento.transportador || '';
+                document.getElementById('entrega').textContent = dados.pagamento.entrega || '';
+                document.getElementById('observacoes').textContent = dados.pagamento.observacoes || '';
+                document.getElementById('tabela').textContent = dados.pagamento.tabela || '';
+            }
+
+            // Preencher produtos
+            if (dados.produtos && Array.isArray(dados.produtos)) {
+                // Limpar produtos existentes
+                const tbody = document.getElementById('produtos-tbody');
+                tbody.innerHTML = '';
+                
+                // Adicionar novos produtos
+                dados.produtos.forEach((produto, index) => {
+                    const novaLinha = document.createElement('tr');
+                    novaLinha.className = 'product-row';
+                    novaLinha.dataset.id = index + 1;
+                    
+                    novaLinha.innerHTML = `
+                        <td contenteditable="true" class="editable">${produto.codigo || ''}</td>
+                        <td contenteditable="true" class="editable">${produto.descricao || ''}</td>
+                        <td contenteditable="true" class="editable">${produto.unidade || ''}</td>
+                        <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.quantidade || '1'}</td>
+                        <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.valorUnitario || '0,00'}</td>
+                        <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.desconto || '0,00'}</td>
+                        <td contenteditable="true" class="editable">${produto.valorTotal || '0,00'}</td>
+                        <td>
+                            <button type="button" onclick="excluirProduto(this)" style="padding: 5px; background-color: #f44336;">X</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(novaLinha);
+                });
+                
+                // Atualizar total geral
+                atualizarTotalGeral();
+            }
+        }
+
+        // Função para atualizar a data e hora de emissão
+        function atualizarDataHora() {
+            const agora = new Date();
+            
+            // Formatar data DD/MM/AAAA
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            const ano = agora.getFullYear();
+            
+            // Formatar hora HH:MM:SS
+            const hora = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            const segundos = String(agora.getSeconds()).padStart(2, '0');
+            
+            const dataHoraFormatada = `${dia}/${mes}/${ano} ${hora}:${minutos}:${segundos}`;
+            
+            document.getElementById('data-emissao').textContent = dataHoraFormatada;
+            document.getElementById('cliente-emissao').textContent = `${dia}/${mes}/${ano} ${hora}:${minutos}`;
+            
+            // Atualizar a cada segundo
+            setTimeout(atualizarDataHora, 1000);
+        }
+        
+        // Função para inicializar a página
+        function inicializar() {
+            // Atualizar data e hora
+            atualizarDataHora();
+            
+            // Carregar dados da URL se existirem
+            carregarDadosDaURL();
+        }
+        
+        // Iniciar as funções quando a página carregar
+        window.onload = inicializar;
+    </script>
+</body>
+</html>
