@@ -283,7 +283,7 @@
                 <p id="empresa-email" contenteditable="true" class="editable">E-mail: ftj230291@gmail.com</p>
             </div>
             <div>
-                <img src="logo.png" alt="Logo" class="logo">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='70' viewBox='0 0 120 70'%3E%3Crect width='120' height='70' fill='%23e6e9ed'/%3E%3Ctext x='60' y='35' text-anchor='middle' dy='0.35em' font-family='sans-serif' font-size='12' fill='%23666'%3ELogo%3C/text%3E%3C/svg%3E" alt="Logo" class="logo">
             </div>
         </div>
 
@@ -400,6 +400,124 @@
         
         // Variável para controlar o número do pedido
         let numeroPedidoAtual = 1;
+
+        // Função para salvar número do pedido (segura para qualquer ambiente)
+        function salvarNumeroPedido() {
+            try {
+                // Tenta atualizar URL apenas se não estiver em iframe/sandbox
+                if (window.location.protocol !== 'about:' && window.parent === window) {
+                    const newUrl = `${window.location.pathname}?pedido=${numeroPedidoAtual}`;
+                    window.history.replaceState({}, '', newUrl);
+                }
+            } catch (error) {
+                // Se falhar, ignora silenciosamente (funciona mesmo sem salvar)
+                console.log('Não foi possível salvar na URL, mas sistema continua funcionando');
+            }
+        }
+
+        // Função para carregar número do pedido (compatível com qualquer ambiente)
+        function carregarNumeroPedido() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const pedidoFromUrl = urlParams.get('pedido');
+                
+                if (pedidoFromUrl && !isNaN(pedidoFromUrl)) {
+                    numeroPedidoAtual = parseInt(pedidoFromUrl);
+                    document.getElementById('numero-pedido').textContent = numeroPedidoAtual;
+                } else {
+                    // Se não tem parâmetro, usar o padrão
+                    numeroPedidoAtual = 1;
+                    document.getElementById('numero-pedido').textContent = numeroPedidoAtual;
+                    salvarNumeroPedido();
+                }
+            } catch (error) {
+                // Fallback: começar do 1 se der erro
+                numeroPedidoAtual = 1;
+                document.getElementById('numero-pedido').textContent = numeroPedidoAtual;
+            }
+        }
+
+        // Função para compartilhar link da nota fiscal (apenas no GitHub Pages)
+        function gerarLinkCompartilhamento() {
+            try {
+                const dados = coletarDadosNotaFiscal();
+                const dadosEncoded = encodeURIComponent(JSON.stringify(dados));
+                
+                if (window.location.protocol !== 'about:') {
+                    return `${window.location.origin}${window.location.pathname}?pedido=${numeroPedidoAtual}&dados=${dadosEncoded}`;
+                } else {
+                    return 'Link de compartilhamento disponível apenas no GitHub Pages';
+                }
+            } catch (error) {
+                return 'Erro ao gerar link de compartilhamento';
+            }
+        }
+
+        // Função para carregar dados compartilhados (apenas se não estiver em sandbox)
+        function carregarDadosCompartilhados() {
+            try {
+                if (window.location.protocol === 'about:') return; // Skip em sandbox
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const dadosEncoded = urlParams.get('dados');
+                
+                if (dadosEncoded) {
+                    const dados = JSON.parse(decodeURIComponent(dadosEncoded));
+                    preencherFormularioComDados(dados);
+                }
+            } catch (error) {
+                console.log('Sem dados compartilhados para carregar');
+            }
+        }
+
+        // Função para preencher formulário com dados compartilhados
+        function preencherFormularioComDados(dados) {
+            if (dados.cliente) {
+                if (dados.cliente.razaoSocial) document.getElementById('cliente-razao').textContent = dados.cliente.razaoSocial;
+                if (dados.cliente.nomeFantasia) document.getElementById('cliente-fantasia').textContent = dados.cliente.nomeFantasia;
+                if (dados.cliente.contato) document.getElementById('cliente-contato').textContent = dados.cliente.contato;
+                if (dados.cliente.logradouro) document.getElementById('cliente-logradouro').textContent = dados.cliente.logradouro;
+                if (dados.cliente.complemento) document.getElementById('cliente-complemento').textContent = dados.cliente.complemento;
+                if (dados.cliente.bairro) document.getElementById('cliente-bairro').textContent = dados.cliente.bairro;
+                if (dados.cliente.localidade) document.getElementById('cliente-localidade').textContent = dados.cliente.localidade;
+                if (dados.cliente.cep) document.getElementById('cliente-cep').textContent = dados.cliente.cep;
+                if (dados.cliente.cnpjCpf) document.getElementById('cliente-cnpj-cpf').textContent = dados.cliente.cnpjCpf;
+                if (dados.cliente.rgIe) document.getElementById('cliente-rg-ie').textContent = dados.cliente.rgIe;
+            }
+
+            if (dados.produtos && dados.produtos.length > 0) {
+                const tbody = document.getElementById('produtos-tbody');
+                tbody.innerHTML = '';
+                
+                dados.produtos.forEach((produto, index) => {
+                    if (produto.descricao || produto.codigo) {
+                        const novaLinha = document.createElement('tr');
+                        novaLinha.className = 'product-row';
+                        novaLinha.dataset.id = index + 1;
+                        
+                        novaLinha.innerHTML = `
+                            <td contenteditable="true" class="editable">${produto.codigo || ''}</td>
+                            <td contenteditable="true" class="editable">${produto.descricao || ''}</td>
+                            <td contenteditable="true" class="editable">${produto.unidade || ''}</td>
+                            <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.quantidade || '1'}</td>
+                            <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.valorUnitario || '0,00'}</td>
+                            <td contenteditable="true" class="editable" onblur="recalcularTotal(this)">${produto.desconto || '0,00'}</td>
+                            <td contenteditable="true" class="editable">${produto.valorTotal || '0,00'}</td>
+                            <td>
+                                <button type="button" onclick="excluirProduto(this)" style="padding: 5px; background-color: #f44336;">X</button>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(novaLinha);
+                    }
+                });
+                
+                atualizarTotalGeral();
+            }
+        }
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
         
         // Função para adicionar um novo produto
         function adicionarProduto() {
@@ -579,27 +697,102 @@
             return texto;
         }
 
-        // Função para enviar email via Gmail Web
+        // Função para enviar email via Gmail (otimizada para mobile)
         function enviarPorEmail(dados) {
             const assunto = `Nota Fiscal ${dados.numeroPedido} - ${dados.cliente.razaoSocial || 'Cliente'}`;
             const corpo = gerarTextoEmail(dados);
             
-            // Criar URL do Gmail com dados preenchidos
-            const gmailUrl = `https://mail.google.com/mail/u/0/?view=cm&to=${encodeURIComponent(MEU_EMAIL)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-            
-            // Abrir Gmail em nova aba
-            window.open(gmailUrl, '_blank');
-            
-            // Mostrar instrução para o usuário
-            setTimeout(() => {
-                alert('Gmail aberto em nova aba! Clique em "Enviar" para enviar a nota fiscal para seu email.');
-            }, 500);
+            if (isMobile()) {
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                
+                if (isAndroid) {
+                    // Android: Múltiplas tentativas para abrir Gmail
+                    
+                    // 1. Tentar Gmail app via intent
+                    const intentUrl = `intent://send?to=${encodeURIComponent(MEU_EMAIL)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}#Intent;scheme=mailto;package=com.google.android.gm;end`;
+                    
+                    // 2. Tentar mailto padrão
+                    const mailtoUrl = `mailto:${encodeURIComponent(MEU_EMAIL)}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    
+                    // 3. Gmail web como fallback
+                    const gmailWebUrl = `https://mail.google.com/mail/u/0/?view=cm&to=${encodeURIComponent(MEU_EMAIL)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    
+                    // Tentar abrir Gmail app primeiro
+                    try {
+                        window.location.href = intentUrl;
+                        
+                        // Se não funcionar, tentar mailto após 1 segundo
+                        setTimeout(() => {
+                            window.location.href = mailtoUrl;
+                            
+                            // Se ainda não funcionar, abrir Gmail web após mais 2 segundos
+                            setTimeout(() => {
+                                window.open(gmailWebUrl, '_blank');
+                            }, 2000);
+                        }, 1000);
+                        
+                    } catch (error) {
+                        // Fallback direto para Gmail web
+                        window.open(gmailWebUrl, '_blank');
+                    }
+                    
+                    alert('Tentando abrir Gmail...\n\n📱 App do Gmail (se instalado)\n🌐 Ou Gmail no navegador');
+                    
+                } else if (isIOS) {
+                    // iOS: Tentar Gmail app e fallbacks
+                    
+                    // 1. Gmail app para iOS
+                    const gmailAppUrl = `googlegmail://co?to=${encodeURIComponent(MEU_EMAIL)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    
+                    // 2. Mail app nativo do iOS
+                    const mailtoUrl = `mailto:${encodeURIComponent(MEU_EMAIL)}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    
+                    // 3. Gmail web
+                    const gmailWebUrl = `https://mail.google.com/mail/u/0/?view=cm&to=${encodeURIComponent(MEU_EMAIL)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    
+                    try {
+                        // Tentar Gmail app
+                        window.location.href = gmailAppUrl;
+                        
+                        // Fallback para Mail nativo após 1.5 segundos
+                        setTimeout(() => {
+                            window.location.href = mailtoUrl;
+                        }, 1500);
+                        
+                        // Fallback final para Gmail web após mais 2 segundos
+                        setTimeout(() => {
+                            window.open(gmailWebUrl, '_blank');
+                        }, 3500);
+                        
+                    } catch (error) {
+                        window.open(gmailWebUrl, '_blank');
+                    }
+                    
+                    alert('Tentando abrir email...\n\n📱 Gmail App\n📧 Mail (se Gmail não estiver instalado)\n🌐 Ou Gmail no Safari');
+                    
+                } else {
+                    // Outros dispositivos móveis: Gmail web otimizado
+                    const gmailWebUrl = `https://mail.google.com/mail/u/0/?view=cm&to=${encodeURIComponent(MEU_EMAIL)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                    window.open(gmailWebUrl, '_blank');
+                    
+                    alert('Abrindo Gmail no navegador...');
+                }
+                
+            } else {
+                // DESKTOP: Gmail web
+                const gmailUrl = `https://mail.google.com/mail/u/0/?view=cm&to=${encodeURIComponent(MEU_EMAIL)}&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+                window.open(gmailUrl, '_blank');
+                
+                alert('Gmail aberto em nova aba! 📧');
+            }
         }
 
         // Função para gerar novo número de pedido
         function gerarNovoNumeroPedido() {
             numeroPedidoAtual++;
             document.getElementById('numero-pedido').textContent = numeroPedidoAtual;
+            salvarNumeroPedido(); // Salva o novo número
         }
 
         // Função para limpar dados para novo pedido
@@ -705,8 +898,15 @@
             }, 100);
         }
 
+        // Função para detectar se é dispositivo móvel
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
         // Inicializar sistema
         function inicializar() {
+            carregarNumeroPedido(); // Carregar número da URL
+            carregarDadosCompartilhados(); // Carregar dados se for link compartilhado
             atualizarDataHora();
         }
         
